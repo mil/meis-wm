@@ -16,12 +16,18 @@ void event_loop() {
   for (;;) {
     XNextEvent(display, &event);
     if (event.type == MapRequest) {
-      //XMapWindow( display, event.xmaprequest.window);
       map_window(&event.xmaprequest.window);
     }
   }
 }
-
+void setup_directory (char * path) {
+  if (!create_directory(path)) {
+    char * syscall;
+    sprintf(syscall, "rm -rf %s\0", path);
+    system(syscall);
+    create_directory(path);
+  }
+}
 Bool create_directory(char * path) {
   struct stat buffer = {0};
   if (stat(path, &buffer) == -1) {
@@ -34,7 +40,6 @@ Bool create_directory(char * path) {
 
 Bool map_window(Window * window) {
   char * name;
-  fprintf(stderr, "Mapping window");
 
   XMapWindow(display, *window);
   XSetWindowBorderWidth(display, *window, 10);
@@ -56,7 +61,7 @@ Bool map_window(Window * window) {
 int main(int argc, char * argv[]) {
   fprintf(stderr, "Intilaized\n");
     // Create the meis directory if doesn't already exist
-  create_directory("/tmp/meis");
+  setup_directory("/tmp/meis");
 
   // Open Display, Set Root, and Active Screen
   assert(display = XOpenDisplay(NULL));

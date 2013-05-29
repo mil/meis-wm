@@ -20,6 +20,16 @@ void event_loop() {
     }
   }
 }
+void write_file(char * path, char * file, int content) {
+  char fp[1000];
+  FILE *f;
+
+  sprintf(fp, "%s/%s\0", path, file);
+  f = fopen(fp, "w+");
+  fprintf(f, "%d", content);
+  fclose(f);
+}
+
 void setup_directory (char * path) {
   if (!create_directory(path)) {
     char * syscall;
@@ -39,23 +49,24 @@ Bool create_directory(char * path) {
 
 
 Bool map_window(Window * window) {
-  char * name;
+  char * path;
 
   XMapWindow(display, *window);
   XSetWindowBorderWidth(display, *window, 10);
   XSetWindowBorder(display, *window, BlackPixel(display, screen)); 
 
 
-  name = malloc(sizeof(char) * 18);
-  sprintf(name, "/tmp/meis/%d", (int) *window);
+  sprintf(path, "/tmp/meis/%d\0", (int) *window);
+  create_directory(path);
 
-  if ( create_directory(name)) {
-    free(name); return True;
-  } else {
-    free(name); return False;
-  }
+  XWindowAttributes *window_attributes;
+  XGetWindowAttributes(display, *window, window_attributes);
 
- }
+  write_file(path, "x", window_attributes -> x);
+  write_file(path, "y", window_attributes -> y);
+  write_file(path, "width", window_attributes -> width);
+  write_file(path, "height", window_attributes -> height);
+}
 
 
 int main(int argc, char * argv[]) {
